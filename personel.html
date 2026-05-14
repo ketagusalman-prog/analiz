@@ -39,6 +39,44 @@
         .status-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 800; text-transform: uppercase; margin-top: 4px; display: inline-block; }
         .tag-alert { background: #fee2e2; color: #991b1b; }
         .tag-ok { background: #dcfce7; color: #166534; }
+
+        /* --- PDF KAYDETME AYARLARI --- */
+        @media print {
+            @page { 
+                size: A4 landscape; 
+                margin: 10mm; 
+            }
+            body { 
+                background: white !important; 
+                padding: 0 !important; 
+            }
+            .container { 
+                max-width: 100% !important; 
+                width: 100% !important; 
+            }
+            /* Yazdırma ekranında görünmesini istemediğimiz yerler */
+            .filter-card, .btn-header-group, #loader, #modalOverlay, #commentModal { 
+                display: none !important; 
+            }
+            .main-card { 
+                border: none !important; 
+                box-shadow: none !important; 
+            }
+            table { 
+                width: 100% !important; 
+                table-layout: fixed; /* Taşırmayı engellemek için */
+            }
+            th, td { 
+                padding: 10px 5px !important; 
+                font-size: 11px !important; 
+            }
+            .note-box { 
+                border: 1px solid #eee !important; 
+                background: #fff !important; 
+            }
+            /* Renklerin PDF'e yansımasını sağlayan zorunlu kural */
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
     </style>
 </head>
 <body>
@@ -65,9 +103,14 @@
             <h1 style="font-weight:800; font-size:32px; letter-spacing:-1.5px; color:var(--primary);">Akıllı Performans Analizi</h1>
             <p id="group-stats" style="color:#64748b; font-weight:500;">Grup istatistikleri yükleniyor...</p>
         </div>
-        <button onclick="verileriGetir()" style="background:white; border:1px solid #e2e8f0; padding:12px 20px; border-radius:12px; font-weight:700; cursor:pointer;">
-            <span id="loader">🔄</span> Verileri Tazele
-        </button>
+        <div class="btn-header-group" style="display:flex; gap:10px;">
+            <button onclick="window.print()" style="background:var(--accent); color:white; border:none; padding:12px 20px; border-radius:12px; font-weight:700; cursor:pointer;">
+                📄 PDF Raporu Al
+            </button>
+            <button onclick="verileriGetir()" style="background:white; border:1px solid #e2e8f0; padding:12px 20px; border-radius:12px; font-weight:700; cursor:pointer;">
+                <span id="loader">🔄</span> Verileri Tazele
+            </button>
+        </div>
     </div>
 
     <div class="filter-card">
@@ -81,12 +124,12 @@
         <table>
             <thead>
                 <tr>
-                    <th>Sıralama</th>
-                    <th>Personel Detay</th>
-                    <th>Çalışma Periyodu</th>
-                    <th>Satış Performansı (Canlı)</th>
-                    <th>Başarı Skoru</th>
-                    <th>Yönetici Geri Bildirimi</th>
+                    <th style="width:6%">Sıralama</th>
+                    <th style="width:24%">Personel Detay</th>
+                    <th style="width:12%">Çalışma Periyodu</th>
+                    <th style="width:23%">Satış Performansı (Canlı)</th>
+                    <th style="width:10%">Başarı Skoru</th>
+                    <th style="width:25%">Yönetici Geri Bildirimi</th>
                 </tr>
             </thead>
             <tbody id="tbody">
@@ -159,7 +202,6 @@
             const personelFisBasiCiro = ciro / (fis || 1);
             let score = ((fis * 1.5) * 0.60) + ((ciro / 1500) * 0.40);
             
-            // GECE KATSAYISI 1.25 OLARAK GÜNCELLENDİ
             const isNight = (p.vardiya || "").toLowerCase().includes("gece");
             p.finalScore = isNight ? score * 1.25 : score;
             
