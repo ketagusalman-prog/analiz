@@ -2,82 +2,163 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>M4 | Merkezi Sayfa Raporlayıcı</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M4 Operasyonel Yönetim - Ana Panel</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #f8fafc; --primary: #0f172a; --accent: #3b82f6; }
-        body { background: var(--bg); font-family: 'Plus Jakarta Sans', sans-serif; padding: 30px; }
-        .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .report-card { background: white; padding: 20px; border-radius: 15px; border: 1px solid #e2e8f0; }
-        .report-card h3 { font-size: 14px; color: #64748b; margin-bottom: 15px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
-        .data-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px border #f8fafc; font-size: 13px; }
-        .status-badge { padding: 3px 8px; border-radius: 5px; font-size: 11px; font-weight: 700; }
-        .loading { color: var(--accent); font-weight: 700; }
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --accent: #10b981;
+            --text: #f8fafc;
+            --border: rgba(255, 255, 255, 0.08);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--accent);
+            letter-spacing: -1px;
+        }
+
+        .header p {
+            color: #94a3b8;
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px;
+            padding: 20px;
+        }
+
+        .nav-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 30px;
+            border-radius: 20px;
+            text-decoration: none;
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .nav-card i {
+            font-size: 40px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .nav-card h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .nav-card p {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+
+        /* Dekoratif Arka Plan Işığı */
+        .nav-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .nav-card:hover::after {
+            opacity: 1;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 30px;
+            color: #475569;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
 
-    <div style="margin-bottom: 30px;">
-        <h1 style="font-weight: 800; font-size: 24px;">📊 Sayfa Bazlı Konsolide Rapor</h1>
-        <p style="color: #64748b;">Diğer dosyalardan anlık veri çekiliyor...</p>
+    <div class="header">
+        <h1>M4 ASİSTAN PANELİ</h1>
+        <p>Lütfen işlem yapmak istediğiniz modülü seçin</p>
     </div>
 
-    <div class="grid-container">
-        <!-- ANALİZ SAYFASI VERİLERİ -->
-        <div class="report-card" id="analiz-kutu">
-            <h3>📈 Analiz Sayfası Özeti</h3>
-            <div id="analiz-content" class="loading">Bağlanıyor...</div>
-        </div>
+    <div class="button-grid">
+        <!-- Analiz Sayfası -->
+        <a href="analiz.html" class="nav-card">
+            <i>📊</i>
+            <h3>Operasyonel Analiz</h3>
+            <p>İstatistikler, grafikler ve performans raporlarını inceleyin.</p>
+        </a>
 
-        <!-- PERSONEL SAYFASI VERİLERİ -->
-        <div class="report-card" id="personel-kutu">
-            <h3>👤 Personel Performansları</h3>
-            <div id="personel-content" class="loading">Bağlanıyor...</div>
-        </div>
+        <!-- Personel Sayfası -->
+        <a href="personel.html" class="nav-card">
+            <i>👥</i>
+            <h3>Personel Yönetimi</h3>
+            <p>Personel kayıtları, sicil bilgileri ve grup düzenlemeleri.</p>
+        </a>
 
-        <!-- TAKİP İZİN SAYFASI VERİLERİ -->
-        <div class="report-card" id="takip-kutu">
-            <h3>📅 Güncel İzin Durumu</h3>
-            <div id="takip-content" class="loading">Bağlanıyor...</div>
-        </div>
+        <!-- Takip & İzin Sayfası -->
+        <a href="takipizin.html" class="nav-card">
+            <i>📅</i>
+            <h3>Takvim & İzin Takip</h3>
+            <p>Vardiya planlama, izin/rapor kayıtları ve takviye yönetimi.</p>
+        </a>
     </div>
 
-    <script>
-        // Sayfalardan veri çekme fonksiyonu
-        async function sayfaVerisiCek(url, elementId, selector) {
-            try {
-                const response = await fetch(url);
-                const text = await response.text();
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(text, 'text/html');
-                
-                // İlgili sayfadaki tabloyu veya veriyi bul
-                const data = doc.querySelector(selector);
-                const target = document.getElementById(elementId);
+    <div class="footer">
+        © 2026 M4 OPERASYONEL YÖNETİM SİSTEMİ
+    </div>
 
-                if (data) {
-                    target.innerHTML = data.innerHTML;
-                    target.classList.remove('loading');
-                } else {
-                    target.innerHTML = "Veri formatı uyumsuz.";
-                }
-            } catch (error) {
-                document.getElementById(elementId).innerHTML = "Sayfaya ulaşılamadı.";
-                console.error(url + " çekilemedi:", error);
-            }
-        }
-
-        // Sayfalar yüklendiğinde diğer sayfalara bağlan
-        window.onload = () => {
-            // Analiz.html'deki tablo gövdesini çek
-            sayfaVerisiCek('analiz.html', 'analiz-content', '#tbody'); 
-            
-            // Personel.html'deki listeyi çek
-            sayfaVerisiCek('personel.html', 'personel-content', '#personel-listesi'); 
-            
-            // Takipizin.html'deki izin verilerini çek
-            sayfaVerisiCek('takipizin.html', 'takip-content', '#izin-listesi');
-        };
-    </script>
 </body>
 </html>
