@@ -38,7 +38,6 @@
 
         .status-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 800; text-transform: uppercase; margin-top: 4px; display: inline-block; }
         .tag-alert { background: #fee2e2; color: #991b1b; }
-        .tag-warning { background: #fff7ed; color: #c2410c; }
         .tag-ok { background: #dcfce7; color: #166534; }
     </style>
 </head>
@@ -98,21 +97,23 @@
 </div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWYGZ7rWKB-IRjL2t1JW8QDqIPRFAZzcVbGVwKO13pYwNhAB86tklN5BqjLRv0dxYJEA/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwVZ7VcV3Nob8Z2eEVrTSECZAlVbPH0eOikAJ585JEPdebcXMhvXw8DwF_T8UoM-TufsQ/exec";
     let dataGlobal = [];
     let currentSicil = "";
+    let sheetEuroRate = 36.50;
 
     async function verileriGetir() {
         const loader = document.getElementById('loader');
         loader.style.display = "inline-block";
         try {
             const res = await fetch(SCRIPT_URL);
-            const rawData = await res.json();
-            dataGlobal = rawData.filter(x => x.sicil && x.isim);
+            const responseData = await res.json();
+            sheetEuroRate = parseFloat(responseData.kur) || 36.50;
+            dataGlobal = responseData.data.filter(x => x.sicil && x.isim);
             setupFilters();
             analizEt();
         } catch (e) {
-            document.getElementById('tbody').innerHTML = '<tr><td colspan="6">Hata!</td></tr>';
+            document.getElementById('tbody').innerHTML = '<tr><td colspan="6">Hata! Veriler çekilemedi.</td></tr>';
         } finally {
             loader.style.display = "none";
         }
@@ -133,7 +134,7 @@
         const fG = document.getElementById('fGrup').value;
         const fV = document.getElementById('fVardiya').value;
         const fS = document.getElementById('fIsim').value.toLowerCase();
-        const EUR_RATE = 36.50;
+        const EUR_RATE = sheetEuroRate;
 
         let filtered = dataGlobal.filter(p => {
             return (fM === "Hepsi" || String(p.magaza).trim() === fM) &&
@@ -153,11 +154,14 @@
         filtered.forEach(p => {
             const fis = parseFloat(p.fis) || 0;
             const ciro = (parseFloat(p.tl) || 0) + ((parseFloat(p.euro) || 0) * EUR_RATE);
-            const personelFisBasiCiro = ciro / (fis || 1);
+            p.toplamTL = ciro; 
             
+            const personelFisBasiCiro = ciro / (fis || 1);
             let score = ((fis * 1.5) * 0.60) + ((ciro / 1500) * 0.40);
+            
+            // GECE KATSAYISI 1.25 OLARAK GÜNCELLENDİ
             const isNight = (p.vardiya || "").toLowerCase().includes("gece");
-            p.finalScore = isNight ? score * 1.6 : score;
+            p.finalScore = isNight ? score * 1.25 : score;
             
             p.devStatus = fis < (meanFis - stdDevFis) ? "KRİTİK FİŞ" : (fis < meanFis ? "ORTALAMA ALTI" : "BAŞARILI");
 
@@ -177,7 +181,7 @@
         });
 
         filtered.sort((a, b) => b.finalScore - a.finalScore);
-        document.getElementById('group-stats').innerText = `Grup Ortalaması: ${meanFis.toFixed(1)} Fiş | Fiş Başı Ciro Hedefi: ₺${Math.round(grupFisBasiCiro)}`;
+        document.getElementById('group-stats').innerText = `Kur: ₺${EUR_RATE.toFixed(2)} | Grup Ortalaması: ${meanFis.toFixed(1)} Fiş | Fiş Başı Ciro Hedefi: ₺${Math.round(grupFisBasiCiro)}`;
         renderTable(filtered, meanFis);
     }
 
@@ -193,7 +197,8 @@
                 <tr class="${rowStyle}">
                     <td><span class="rank-star">${star}</span> <b>${i+1}</b></td>
                     <td>
-                        <div style="font-weight:800; color:var(--primary);">${p.isim}</div>
+                        <div style="font-weight:800; color:var(--primary); font-size:15px;">${p.isim}</div>
+                        <div style="font-size:12px; color:var(--accent); font-weight:700; margin: 2px 0;">Toplam Satış: ₺${Math.round(p.toplamTL).toLocaleString('tr-TR')}</div>
                         <div style="font-size:11px; color:#94a3b8;">ID: ${p.sicil} | ${p.magaza}</div>
                         <span class="status-tag ${p.devStatus === 'BAŞARILI' ? 'tag-ok' : 'tag-alert'}">${p.devStatus}</span>
                         ${p.upsellNeed !== 'SATIŞ DENGELİ' ? `<span class="status-tag ${p.upsellStatus === 'alert' ? 'tag-alert' : 'tag-ok'}">${p.upsellNeed}</span>` : ''}
@@ -233,25 +238,16 @@
         const btn = document.getElementById('saveBtn');
         const originalText = btn.innerText;
         const newNote = document.getElementById('adminComment').value;
-        
         btn.innerText = "⏳...";
         btn.disabled = true;
-
         try {
-            // Google Sheets'e gönder
             await fetch(SCRIPT_URL, { 
                 method: 'POST', 
                 mode: 'no-cors', 
-                body: JSON.stringify({ sicil: currentSicil, not: newNote }) 
+                body: JSON.stringify({ islem: "notKaydet", sicil: currentSicil, not: newNote }) 
             });
-
-            // Hafızadaki veriyi (dataGlobal) milimetrik olarak güncelle
             const pIndex = dataGlobal.findIndex(x => String(x.sicil) === String(currentSicil));
-            if(pIndex !== -1) {
-                dataGlobal[pIndex].not = newNote;
-            }
-
-            // Arayüzü tazele (Sayfa yenilemeden sadece tabloyu günceller)
+            if(pIndex !== -1) dataGlobal[pIndex].not = newNote;
             analizEt();
             closeModal();
         } catch (e) { 
