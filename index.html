@@ -2,196 +2,82 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>M4 | Merkezi Operasyonel Denetim</title>
+    <title>M4 | Merkezi Sayfa Raporlayıcı</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #f0f4f8; --primary: #0f172a; --accent: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: var(--bg); padding: 20px; color: #1e293b; }
-        .container { max-width: 1600px; margin: auto; }
-
-        /* Dashboard Kartları */
-        .dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
-        .card { background: white; padding: 25px; border-radius: 24px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
-        .card h3 { font-size: 12px; text-transform: uppercase; color: #64748b; margin-bottom: 10px; letter-spacing: 1px; }
-        .card .value { font-size: 28px; font-weight: 800; color: var(--primary); }
-        .card .trend { font-size: 12px; margin-top: 5px; font-weight: 600; }
-
-        /* Ana Panel Düzeni */
-        .main-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
-        .panel { background: white; border-radius: 24px; padding: 25px; border: 1px solid #e2e8f0; }
-        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { text-align: left; padding: 15px; font-size: 12px; color: #64748b; border-bottom: 2px solid #f1f5f9; }
-        td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
-
-        /* Durum Rozetleri */
-        .status { padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
-        .status-active { background: #dcfce7; color: #166534; }
-        .status-leave { background: #fee2e2; color: #991b1b; }
-        
-        .ai-insight { background: #eff6ff; border-left: 5px solid var(--accent); padding: 15px; border-radius: 12px; margin-top: 15px; font-size: 13.5px; line-height: 1.6; }
-        
-        .btn-sync { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; }
+        :root { --bg: #f8fafc; --primary: #0f172a; --accent: #3b82f6; }
+        body { background: var(--bg); font-family: 'Plus Jakarta Sans', sans-serif; padding: 30px; }
+        .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .report-card { background: white; padding: 20px; border-radius: 15px; border: 1px solid #e2e8f0; }
+        .report-card h3 { font-size: 14px; color: #64748b; margin-bottom: 15px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
+        .data-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px border #f8fafc; font-size: 13px; }
+        .status-badge { padding: 3px 8px; border-radius: 5px; font-size: 11px; font-weight: 700; }
+        .loading { color: var(--accent); font-weight: 700; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="panel-header" style="margin-bottom: 30px;">
-        <div>
-            <h1 style="font-weight: 800; font-size: 32px; letter-spacing: -1.5px;">M4 Master Operasyon Paneli</h1>
-            <p style="color: #64748b;">Personel, Satış ve İzin Verilerinin Konsolide Raporu</p>
-        </div>
-        <button class="btn-sync" onclick="verileriKonsolideEt()">🔄 Tüm Sistemleri Senkronize Et</button>
+    <div style="margin-bottom: 30px;">
+        <h1 style="font-weight: 800; font-size: 24px;">📊 Sayfa Bazlı Konsolide Rapor</h1>
+        <p style="color: #64748b;">Diğer dosyalardan anlık veri çekiliyor...</p>
     </div>
 
-    <div class="dashboard-grid">
-        <div class="card">
-            <h3>Toplam Bölge Cirosu</h3>
-            <div id="total-ciro" class="value">₺0</div>
-            <div class="trend" style="color: var(--success);">↑ Dinamik Kur Aktif</div>
+    <div class="grid-container">
+        <!-- ANALİZ SAYFASI VERİLERİ -->
+        <div class="report-card" id="analiz-kutu">
+            <h3>📈 Analiz Sayfası Özeti</h3>
+            <div id="analiz-content" class="loading">Bağlanıyor...</div>
         </div>
-        <div class="card">
-            <h3>Operasyonel Personel Gücü</h3>
-            <div id="active-staff" class="value">0 / 0</div>
-            <div id="leave-info" class="trend" style="color: var(--danger);">0 Kişi İzinli</div>
+
+        <!-- PERSONEL SAYFASI VERİLERİ -->
+        <div class="report-card" id="personel-kutu">
+            <h3>👤 Personel Performansları</h3>
+            <div id="personel-content" class="loading">Bağlanıyor...</div>
         </div>
-        <div class="card">
-            <h3>Bölge Verimlilik Skoru</h3>
-            <div id="avg-performance" class="value">0.00</div>
-            <div class="trend" style="color: var(--accent);">Hedef: 35.00+</div>
-        </div>
-        <div class="card">
-            <h3>Kritik Mağaza</h3>
-            <div id="critical-store" class="value">-</div>
-            <div class="trend">En Çok Müdahale Gereken</div>
+
+        <!-- TAKİP İZİN SAYFASI VERİLERİ -->
+        <div class="report-card" id="takip-kutu">
+            <h3>📅 Güncel İzin Durumu</h3>
+            <div id="takip-content" class="loading">Bağlanıyor...</div>
         </div>
     </div>
 
-    <div class="main-layout">
-        <!-- Satış ve Performans Raporu (analiz.html + personel.html) -->
-        <div class="panel">
-            <div class="panel-header">
-                <h2 style="font-size: 18px; font-weight: 800;">Performans & Satış Liderliği</h2>
-            </div>
-            <table id="performance-table">
-                <thead>
-                    <tr>
-                        <th>Personel / Mağaza</th>
-                        <th>Fiş (Hız)</th>
-                        <th>Ciro (₺)</th>
-                        <th>Başarı Skoru</th>
-                        <th>Durum</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td colspan="5" style="text-align:center; padding:40px;">Veriler senkronize ediliyor...</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- İzin ve Takip Raporu (takipizin.html) -->
-        <div class="panel">
-            <div class="panel-header">
-                <h2 style="font-size: 18px; font-weight: 800;">İzin & Devam Kontrol</h2>
-            </div>
-            <div id="izin-listesi">
-                <!-- Dinamik İzin Verileri -->
-            </div>
-            <div class="ai-insight">
-                <strong>💡 Akıllı Denetim Notu:</strong>
-                <p id="ai-note">Veriler işlendikten sonra operasyonel risk analizi burada görünecektir.</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwVZ7VcV3Nob8Z2eEVrTSECZAlVbPH0eOikAJ585JEPdebcXMhvXw8DwF_T8UoM-TufsQ/exec";
-
-    async function verileriKonsolideEt() {
-        try {
-            const res = await fetch(SCRIPT_URL);
-            const responseData = await res.json();
-            const kur = parseFloat(responseData.kur) || 36.50;
-            const data = responseData.data; // Personel ve Satış Verileri
-            const izinler = responseData.izinler || []; // takipizin.html verileri
-
-            // 1. PERFORMANS ANALİZİ (analiz.html ve personel.html mantığı)
-            let toplamCiro = 0;
-            let toplamSkor = 0;
-            let aktifPersonel = 0;
-
-            const tableBody = document.querySelector("#performance-table tbody");
-            tableBody.innerHTML = "";
-
-            data.forEach(p => {
-                if(!p.ad || p.ad === "Tanımsız") return;
+    <script>
+        // Sayfalardan veri çekme fonksiyonu
+        async function sayfaVerisiCek(url, elementId, selector) {
+            try {
+                const response = await fetch(url);
+                const text = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, 'text/html');
                 
-                const fis = parseFloat(p.fis) || 0;
-                const ciro = (parseFloat(p.tl) || 0) + ((parseFloat(p.euro) || 0) * kur);
-                let score = ((fis * 1.5) * 0.60) + ((ciro / 1500) * 0.40);
-                if((p.vardiya || "").toLowerCase().includes("gece")) score *= 1.25;
+                // İlgili sayfadaki tabloyu veya veriyi bul
+                const data = doc.querySelector(selector);
+                const target = document.getElementById(elementId);
 
-                toplamCiro += ciro;
-                toplamSkor += score;
-                aktifPersonel++;
-
-                const isLeave = izinler.some(iz => iz.personelAd === p.ad);
-
-                tableBody.innerHTML += `
-                    <tr>
-                        <td><b>${p.ad}</b><br><small style="color:#64748b;">${p.magaza}</small></td>
-                        <td>${fis}</td>
-                        <td>₺${Math.round(ciro).toLocaleString()}</td>
-                        <td><b style="color:var(--accent)">${score.toFixed(2)}</b></td>
-                        <td><span class="status ${isLeave ? 'status-leave' : 'status-active'}">${isLeave ? 'İzinli' : 'Aktif'}</span></td>
-                    </tr>
-                `;
-            });
-
-            // 2. İZİN ANALİZİ (takipizin.html mantığı)
-            const izinContainer = document.getElementById("izin-listesi");
-            izinContainer.innerHTML = "";
-            let izinliSayisi = 0;
-
-            izinler.forEach(iz => {
-                izinliSayisi++;
-                izinContainer.innerHTML += `
-                    <div style="padding:15px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <div style="font-weight:700;">${iz.personelAd}</div>
-                            <div style="font-size:11px; color:#64748b;">${iz.izinTipi} | ${iz.baslangic}</div>
-                        </div>
-                        <div style="color:var(--danger); font-weight:800; font-size:12px;">DÖNÜŞ: ${iz.bitis}</div>
-                    </div>
-                `;
-            });
-
-            // 3. ÜST KARTLARIN GÜNCELLENMESİ
-            document.getElementById("total-ciro").innerText = `₺${Math.round(toplamCiro).toLocaleString()}`;
-            document.getElementById("active-staff").innerText = `${aktifPersonel - izinliSayisi} / ${aktifPersonel}`;
-            document.getElementById("leave-info").innerText = `${izinliSayisi} Personel Şu An İzinli`;
-            document.getElementById("avg-performance").innerText = (toplamSkor / aktifPersonel).toFixed(2);
-
-            // 4. AKILLI ANALİZ NOTU (M4 vs Diğerleri Mantığı)
-            const m4Data = data.filter(x => x.magaza.includes("M4"));
-            const m4FisOrt = m4Data.reduce((a,b) => a + (parseFloat(b.fis)||0), 0) / m4Data.length;
-            
-            document.getElementById("ai-note").innerHTML = `
-                M4 Mağazasında fiş yoğunluğu <b>${m4FisOrt.toFixed(1)}</b> seviyesinde. 
-                Şu an ${izinliSayisi} personel izinli olduğu için vardiya planlamasında M4 işlem hızı önceliğe alınmalı. 
-                Satış kalitesini artırmak için izin dönüşü olan personeller yüksek cirolu reyonlara kaydırılabilir.
-            `;
-
-        } catch (e) {
-            console.error("Konsolidasyon hatası:", e);
+                if (data) {
+                    target.innerHTML = data.innerHTML;
+                    target.classList.remove('loading');
+                } else {
+                    target.innerHTML = "Veri formatı uyumsuz.";
+                }
+            } catch (error) {
+                document.getElementById(elementId).innerHTML = "Sayfaya ulaşılamadı.";
+                console.error(url + " çekilemedi:", error);
+            }
         }
-    }
 
-    window.onload = verileriKonsolideEt;
-</script>
+        // Sayfalar yüklendiğinde diğer sayfalara bağlan
+        window.onload = () => {
+            // Analiz.html'deki tablo gövdesini çek
+            sayfaVerisiCek('analiz.html', 'analiz-content', '#tbody'); 
+            
+            // Personel.html'deki listeyi çek
+            sayfaVerisiCek('personel.html', 'personel-content', '#personel-listesi'); 
+            
+            // Takipizin.html'deki izin verilerini çek
+            sayfaVerisiCek('takipizin.html', 'takip-content', '#izin-listesi');
+        };
+    </script>
 </body>
 </html>
