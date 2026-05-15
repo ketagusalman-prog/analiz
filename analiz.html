@@ -21,20 +21,10 @@
         th { background: #f8fafc; padding: 18px; text-align: left; font-size: 12px; font-weight: 800; color: #64748b; border-bottom: 2px solid #f1f5f9; }
         td { padding: 18px; border-bottom: 1px solid #f1f5f9; }
         .score-badge { padding: 6px 12px; border-radius: 8px; font-weight: 800; font-size: 14px; background: #f1f5f9; color: var(--primary); }
-
-        /* --- PDF YAZDIRMA AYARLARI --- */
-        @media print {
-            @page { size: A4 landscape; margin: 10mm; }
-            body { background: white !important; padding: 0 !important; }
-            .container { max-width: 100% !important; width: 100% !important; }
-            /* Butonları Gizle */
-            .action-buttons { display: none !important; }
-            /* Kartları ve Tabloyu Optimize Et */
-            .analysis-card { box-shadow: none !important; border: 1px solid #e2e8f0 !important; border-top: 5px solid var(--accent) !important; page-break-inside: avoid; }
-            .main-card { border: none !important; }
-            th { background: #f1f5f9 !important; }
-            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-        }
+        
+        /* Yeni Buton Stil */
+        .nav-btn { background: white; color: var(--primary); border: 1px solid #e2e8f0; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; text-decoration: none; display: inline-flex; align-items: center; font-size: 14px; }
+        .nav-btn:hover { background: #f1f5f9; }
     </style>
 </head>
 <body>
@@ -45,25 +35,29 @@
             <h1 style="font-weight:800; font-size:28px; letter-spacing:-1px;">M4 Bölgesel Strateji Paneli</h1>
             <p id="updateTime" style="color:#64748b; font-size:13px;">Analiz motoru aktif...</p>
         </div>
-        <div class="action-buttons" style="display:flex; gap:10px;">
-            <button onclick="window.print()" style="background:var(--accent); color:white; border:none; padding:12px 24px; border-radius:12px; font-weight:700; cursor:pointer;">📄 PDF Raporu Al</button>
-            <button onclick="verileriGetir()" style="background:var(--primary); color:white; border:none; padding:12px 24px; border-radius:12px; font-weight:700; cursor:pointer;">🔄 Analizi Yenile</button>
+        <div style="display: flex; gap: 10px;">
+            <!-- EKLENEN BUTON -->
+            <a href="personel.html" class="nav-btn">👤 Personel Paneli</a>
+            <button onclick="verileriGetir()" style="background:var(--primary); color:white; border:none; padding:12px 24px; border-radius:12px; font-weight:700; cursor:pointer; transition:0.3s;">🔄 Analizi Yenile</button>
         </div>
     </div>
 
     <div class="analysis-grid">
+        <!-- 1. KUTU: M4 ÖZEL YORUMU -->
         <div class="analysis-card" style="border-top-color: var(--accent);">
             <h3>M4 Operasyonel Baskı Analizi</h3>
             <div id="box-m4-val" class="value">Hız Odaklı</div>
             <div class="comment"><b>M4 Mağazası:</b> Yüksek fiş yoğunluğu nedeniyle kasada ürün tanıtımı kısıtlıdır. M4, performans skorunu <b>işlem hızıyla</b> domine ederken, diğer mağazalar bu farkı <b>satış kalitesi (upsell)</b> ile kapatmalıdır.</div>
         </div>
 
+        <!-- 2. KUTU: DİĞER MAĞAZALAR İÇİN ÖNERİ -->
         <div class="analysis-card" style="border-top-color: var(--gold);">
             <h3>Satış & Kalite Stratejisi</h3>
             <div id="box-ciro-val" class="value">Potansiyel: Yüksek</div>
             <div class="comment">Fiş yoğunluğu M4 kadar yüksek olmayan mağazalar, müşteri başına daha fazla vakit ayırabildikleri için <b>sepet büyüklüğünü</b> hedeflemelidir. M4'ün hız skorunu yakalamanın yolu <b>nitelikli satıştan</b> geçmektedir.</div>
         </div>
 
+        <!-- 3. KUTU: GENEL BÖLGE TEŞHİSİ -->
         <div class="analysis-card" style="border-top-color: var(--success);">
             <h3>Genel Performans Teşhisi</h3>
             <div id="box-perf-val" class="value">Bölge Dengesi</div>
@@ -125,6 +119,7 @@
             const m4Verisi = mağazaListesi.find(m => m.isim.includes("M4")) || mağazaListesi[0];
             const genelSkorOrt = mağazaListesi.reduce((a,b) => a + b.oSkor, 0) / mağazaListesi.length;
 
+            // KUTU GÜNCELLEMELERİ
             document.getElementById('box-m4-val').innerText = `${m4Verisi.oFis.toFixed(1)} Fiş`;
             document.getElementById('box-perf-val').innerText = `${genelSkorOrt.toFixed(2)} Puan`;
 
