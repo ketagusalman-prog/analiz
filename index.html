@@ -11,6 +11,7 @@
             --card: #1e293b;
             --accent: #10b981;
             --gold: #f59e0b; /* MPSR için altın sarısı vurgu rengi */
+            --blue: #38bdf8; /* Raporlar için mavi vurgu rengi */
             --text: #f8fafc;
             --border: rgba(255, 255, 255, 0.08);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -54,11 +55,11 @@
 
         .button-grid {
             display: grid;
-            /* 4 kartı yan yana veya ekran küçüldükçe alt alta düzgün dizmek için optimize edildi */
-            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            /* 5 kartı yan yana veya ekran küçüldükçe alt alta düzgün dizmek için optimize edildi */
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             width: 100%;
-            max-width: 1200px;
+            max-width: 1300px; /* 5 kart için genişlik hafifçe artırıldı */
             padding: 20px;
         }
 
@@ -87,6 +88,11 @@
         /* MPSR Kartına Özel Hover Rengi */
         .nav-card.mpsr-card:hover {
             border-color: var(--gold);
+        }
+
+        /* Rapor Kartına Özel Hover Rengi */
+        .nav-card.rapor-card:hover {
+            border-color: var(--blue);
         }
 
         .nav-card i {
@@ -125,6 +131,11 @@
             background: radial-gradient(circle, rgba(245, 158, 11, 0.07) 0%, transparent 70%);
         }
 
+        /* Rapor Kartı için Mavi Işık efekti */
+        .nav-card.rapor-card::after {
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.07) 0%, transparent 70%);
+        }
+
         .nav-card:hover::after {
             opacity: 1;
         }
@@ -153,11 +164,18 @@
             <p>İstatistikler, grafikler ve performans raporlarını inceleyin.</p>
         </a>
 
-        <!-- MPSR Raporlama Sayfası (YENİ EKLENEN) -->
+        <!-- MPSR Raporlama Sayfası -->
         <a href="mpsr.html" class="nav-card mpsr-card">
             <i>📋</i>
             <h3 style="color: var(--gold);">MPSR Performans</h3>
             <p>Aylık kümülatif durum, dynamic hedefler ve PDF çıktı raporlama paneli.</p>
+        </a>
+
+        <!-- Rapor Sayfası (YENİ EKLENEN) -->
+        <a href="rapor.html" class="nav-card rapor-card">
+            <i>🗂️</i>
+            <h3 style="color: var(--blue);">Genel Raporlar</h3>
+            <p>Sistem logları, periyodik çıktılar ve arşivlenmiş geçmiş raporlar.</p>
         </a>
 
         <!-- Personel Sayfası -->
