@@ -10,8 +10,8 @@
             --bg: #0f172a;
             --card: #1e293b;
             --accent: #10b981;
-            --gold: #f59e0b; /* MPSR için altın sarısı vurgu rengi */
-            --blue: #38bdf8; /* Raporlar için mavi vurgu rengi */
+            --gold: #f59e0b;
+            --blue: #38bdf8;
             --text: #f8fafc;
             --border: rgba(255, 255, 255, 0.08);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -27,21 +27,23 @@
         body {
             background: var(--bg);
             color: var(--text);
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            padding: 40px 20px;
+            overflow-x: hidden;
+            overflow-y: auto; /* Mobilde ve küçük ekranlarda taşma olunca kaydırmayı açar */
         }
 
         .header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         .header h1 {
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             font-weight: 800;
             color: var(--accent);
             letter-spacing: -1px;
@@ -49,25 +51,26 @@
 
         .header p {
             color: #94a3b8;
-            margin-top: 10px;
-            font-size: 1.1rem;
+            margin-top: 8px;
+            font-size: 1rem;
         }
 
         .button-grid {
             display: grid;
-            /* 5 kartı yan yana veya ekran küçüldükçe alt alta düzgün dizmek için optimize edildi */
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+            /* Büyük ekranlarda yan yana 5 tane sığması, mobilde alt alta geçmesi için optimize edildi */
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
             width: 100%;
-            max-width: 1300px; /* 5 kart için genişlik hafifçe artırıldı */
-            padding: 20px;
+            max-width: 1200px;
+            padding: 10px;
+            margin-bottom: 40px; /* Footer için boşluk */
         }
 
         .nav-card {
             background: var(--card);
             border: 1px solid var(--border);
-            padding: 30px;
-            border-radius: 20px;
+            padding: 20px 15px; /* Dikey taşmayı önlemek için padding azaltıldı */
+            border-radius: 16px;
             text-decoration: none;
             color: var(--text);
             display: flex;
@@ -80,37 +83,35 @@
         }
 
         .nav-card:hover {
-            transform: translateY(-10px);
+            transform: translateY(-5px);
             border-color: var(--accent);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
         }
 
-        /* MPSR Kartına Özel Hover Rengi */
         .nav-card.mpsr-card:hover {
             border-color: var(--gold);
         }
 
-        /* Rapor Kartına Özel Hover Rengi */
         .nav-card.rapor-card:hover {
             border-color: var(--blue);
         }
 
         .nav-card i {
-            font-size: 40px;
-            margin-bottom: 15px;
+            font-size: 32px; /* Emojiler biraz küçültüldü */
+            margin-bottom: 12px;
             display: block;
         }
 
         .nav-card h3 {
-            font-size: 1.3rem;
+            font-size: 1.1rem; /* Başlıklar optimize edildi */
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .nav-card p {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #94a3b8;
-            line-height: 1.5;
+            line-height: 1.4;
         }
 
         /* Dekoratif Arka Plan Işığı */
@@ -126,12 +127,10 @@
             transition: var(--transition);
         }
 
-        /* MPSR Kartı için Altın Sarısı Işık efekti */
         .nav-card.mpsr-card::after {
             background: radial-gradient(circle, rgba(245, 158, 11, 0.07) 0%, transparent 70%);
         }
 
-        /* Rapor Kartı için Mavi Işık efekti */
         .nav-card.rapor-card::after {
             background: radial-gradient(circle, rgba(56, 189, 248, 0.07) 0%, transparent 70%);
         }
@@ -141,11 +140,35 @@
         }
 
         .footer {
-            position: absolute;
-            bottom: 30px;
+            margin-top: auto; /* Sayfa altı boşluğuna göre kendini ayarlar */
             color: #475569;
             font-size: 0.8rem;
             font-weight: 600;
+            text-align: center;
+            padding-top: 20px;
+        }
+
+        /* Telefon ve Küçük Ekranlar İçin Ekstra İyileştirme */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 10px;
+            }
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            .button-grid {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* Mobilde yan yana 2'li düzeni zorlar, sığmazsa alt alta geçer */
+                gap: 12px;
+            }
+            .nav-card {
+                padding: 15px 10px;
+            }
+            .nav-card i {
+                font-size: 28px;
+            }
+            .nav-card h3 {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
@@ -171,7 +194,7 @@
             <p>Aylık kümülatif durum, dynamic hedefler ve PDF çıktı raporlama paneli.</p>
         </a>
 
-        <!-- Rapor Sayfası (YENİ EKLENEN) -->
+        <!-- Rapor Sayfası -->
         <a href="rapor.html" class="nav-card rapor-card">
             <i>🗂️</i>
             <h3 style="color: var(--blue);">Genel Raporlar</h3>
