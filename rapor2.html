@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>M4 | Gelişmiş Mağazalar Arası Matris ve Performans Analizörü</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #090d16; --card-bg: #131c2e; --text: #f8fafc; --text-muted: #64748b; --accent: #3b82f6; --danger: #ef4444; --warning: #f59e0b; --success: #10b981; --purple: #a855f7; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--bg); color: var(--text); padding: 30px; }
+        .container { max-width: 1600px; margin: auto; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #1e293b; padding-bottom: 20px; flex-wrap: wrap; gap: 20px; }
+        h1 { font-weight: 800; font-size: 30px; letter-spacing: -1px; background: linear-gradient(90deg, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .loader-box { font-size: 14px; color: var(--accent); font-weight: bold; background: rgba(59, 130, 246, 0.1); padding: 8px 16px; border-radius: 20px; }
+        
+        /* Filtre Alanı */
+        .filter-section { display: flex; align-items: center; gap: 12px; background: rgba(30, 41, 59, 0.5); padding: 10px 20px; border-radius: 12px; border: 1px solid #1e293b; }
+        .filter-label { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+        .filter-select { background: var(--bg); color: #fff; border: 1px solid var(--accent); padding: 8px 16px; border-radius: 8px; font-weight: 600; outline: none; cursor: pointer; min-width: 180px; }
+        .filter-select:focus { box-shadow: 0 0 10px rgba(59, 130, 246, 0.3); }
+
+        /* Dashboard Layout */
+        .grid-container { display: grid; grid-template-columns: repeat(12, 1fr); gap: 25px; margin-bottom: 30px; }
+        .col-12 { grid-column: span 12; }
+        .col-6 { grid-column: span 6; }
+
+        .analysis-card { background: var(--card-bg); border-radius: 20px; padding: 25px; border: 1px solid #1e293b; display: flex; flex-direction: column; box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
+        .analysis-card h2 { font-size: 18px; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1e293b; padding-bottom: 12px; }
+        
+        /* Otomatik Yorumlayıcı Alanı */
+        .ai-narrative-box { background: linear-gradient(135deg, #1e1b4b, #111827); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 25px; }
+        .ai-narrative-box h3 { color: var(--purple); font-size: 15px; font-weight: 800; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .ai-text { font-size: 14px; line-height: 1.6; color: #e2e8f0; font-weight: 500; }
+        .ai-text p { margin-bottom: 10px; }
+
+        /* Grafiksel Karşılaştırma Çubukları */
+        .bar-comparison-list { display: flex; flex-direction: column; gap: 15px; }
+        .comp-row { display: flex; flex-direction: column; gap: 6px; }
+        .comp-info { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; }
+        .comp-bar-bg { width: 100%; background: #090d16; height: 12px; border-radius: 6px; overflow: hidden; position: relative; }
+        .comp-bar-fill { height: 100%; border-radius: 6px; width: 0%; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* Tablo Yapısı */
+        .data-table-wrapper { width: 100%; overflow-x: auto; }
+        .modern-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+        .modern-table th { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 800; padding: 12px 16px; text-align: left; }
+        .modern-table td { background: #090d16; padding: 14px 16px; font-size: 13px; color: #fff; vertical-align: middle; }
+        .modern-table tr td:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+        .modern-table tr td:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+        .sub-text { font-size: 11px; color: var(--text-muted); display: block; margin-top: 2px; }
+
+        /* Badges */
+        .badge { font-size: 11px; padding: 4px 8px; border-radius: 12px; font-weight: 800; display: inline-block; }
+        .badge-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
+        .badge-success { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .badge-warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.2); }
+        .badge-purple { background: rgba(168, 85, 247, 0.1); color: var(--purple); border: 1px solid rgba(168, 85, 247, 0.2); }
+        
+        /* Aksiyon Kutusu */
+        .action-box { background: rgba(239, 68, 68, 0.05); border-left: 3px solid var(--danger); padding: 8px 12px; border-radius: 0 8px 8px 0; font-size: 12px; color: #cbd5e1; font-weight: 500; }
+
+        @media print {
+            body { background: white !important; color: #000 !important; padding: 0; }
+            .analysis-card { background: #fff !important; color: #000 !important; border: 1px solid #cbd5e1 !important; box-shadow: none !important; page-break-inside: avoid; }
+            .modern-table td { background: #f8fafc !important; color: #000 !important; }
+            .comp-bar-bg { background: #e2e8f0 !important; }
+            .loader-box, button, .filter-section { display: none !important; }
+            .ai-narrative-box { background: #f1f5f9 !important; border-color: #cbd5e1 !important; }
+            .ai-text { color: #000 !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>M4 Merkez Odaklı İş Yükü ve Yoğunluk Etki Matrisi</h1>
+            <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">Mağaza ve pozisyon bazlı dinamik filtreleme, verimlilik anomalilerinin tespiti ve stratejik aksiyon planları</p>
+        </div>
+        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+            <!-- DİNAMİK FİLTRELEME ALANI -->
+            <div class="filter-section">
+                <span class="filter-label">Odak Mağaza:</span>
+                <select id="storeSelector" class="filter-select" onchange="hesaplaVeRaporla()">
+                    <!-- Dinamik dolacak -->
+                </select>
+                
+                <span class="filter-label" style="margin-left: 10px;">Pozisyon:</span>
+                <select id="positionSelector" class="filter-select" onchange="hesaplaVeRaporla()">
+                    <!-- Dinamik dolacak -->
+                </select>
+            </div>
+            <button onclick="window.print()" style="background: var(--accent); color:white; border:none; padding: 10px 20px; border-radius: 10px; font-weight:700; cursor:pointer;">🖨️ Raporu Yazdır / PDF</button>
+            <div id="loadingStatus" class="loader-box">🔄 Ham Veriler Çekiliyor ve Modelleniyor...</div>
+        </div>
+    </header>
+
+    <!-- ÜST DÜZEY OTOMATİK YORUMLAYICI -->
+    <div class="ai-narrative-box">
+        <h3>🎯 <span id="aiPanelTitle">M4</span> ÖZELİNE AYRIŞTIRILMIŞ MAKRO OPERASYONEL ÖNGÖRÜLER VE GELİŞTİRME YOL HARİTASI</h3>
+        <div class="ai-text" id="aiExecutiveSummary">
+            Matematiksel analiz motoru çalıştırılıyor. Lütfen bekleyin...
+        </div>
+    </div>
+
+    <div class="grid-container">
+        <!-- MAĞAZALAR ARASI İŞ YÜKÜ KARŞILAŞTIRMASI -->
+        <div class="analysis-card col-6">
+            <h2>📊 Mağazalar Arası İş Yükü Dağılımı <span style="font-size:12px; color:var(--text-muted);">[Personel Başına Düşen Ort. Fiş]</span></h2>
+            <div class="bar-comparison-list" id="storeWorkloadBars"></div>
+        </div>
+
+        <!-- YOĞUNLUK VE SEPET ETKİSİ -->
+        <div class="analysis-card col-6">
+            <h2>📈 Mağazalar Arası Sepet Gücü <span style="font-size:12px; color:var(--text-muted);">[Ortalama Fiş Başı Ciro - ₺]</span></h2>
+            <div class="bar-comparison-list" id="storeBasketBars"></div>
+        </div>
+
+        <!-- EN KRİTİK PERSONEL VE AKSİYON PLANLARI -->
+        <div class="analysis-card col-12">
+            <h2>📉 <span class="dynamic-store-name">M4</span> Gelişimini Yavaşlatan ve Cirosal Risk Barındıran Son 10 Personel</h2>
+            <div class="data-table-wrapper">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Personel Bilgisi</th>
+                            <th>Çalıştığı Yer</th>
+                            <th>İşlem Hacmi (Fiş)</th>
+                            <th>Sepet Ortalaması</th>
+                            <th>Odak Mağaza Bazlı Fırsat Kaybı</th>
+                            <th>Önerilen Acil Aksiyon Planı</th>
+                        </tr>
+                    </thead>
+                    <tbody id="criticalBottomTenTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- EN İYİ PERFORMANS GÖSTEREN İLK 10 PERSONEL -->
+        <div class="analysis-card col-12">
+            <h2>💎 <span class="dynamic-store-name">M4</span> Lokomotifi ve Genel Ciro Sıralamasında Lider İlk 10 Personel</h2>
+            <div class="data-table-wrapper">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Personel Bilgisi</th>
+                            <th>Çalıştığı Yer</th>
+                            <th>İşlem Hacmi (Fiş)</th>
+                            <th>Sepet Ortalaması</th>
+                            <th>Toplam Ciro Katkısı</th>
+                            <th>Verimlilik Durumu</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topTenTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwVZ7VcV3Nob8Z2eEVrTSECZAlVbPH0eOikAJ585JEPdebcXMhvXw8DwF_T8UoM-TufsQ/exec";
+    let rawData = [];
+    let euroRate = 36.50;
+
+    async function verileriAnalizEt() {
+        try {
+            const res = await fetch(SCRIPT_URL);
+            if (!res.ok) throw new Error("Ağ yanıtı düzgün değil.");
+            const responseData = await res.json();
+            
+            euroRate = parseFloat(responseData.kur) || 36.50;
+            rawData = (responseData.data || []).filter(x => x.sicil && x.isim);
+            
+            // Mağaza ve Pozisyon Listesini Dinamik Çekme ve Seçicileri Doldurma
+            buildStoreSelector();
+            buildPositionSelector();
+            
+            document.getElementById('loadingStatus').style.display = 'none';
+            hesaplaVeRaporla();
+        } catch (e) {
+            console.error("Veri analiz hatası:", e);
+            document.getElementById('loadingStatus').innerText = "❌ Veri yükleme veya işlem hatası!";
+        }
+    }
+
+    function buildStoreSelector() {
+        const selector = document.getElementById('storeSelector');
+        let magazalar = [...new Set(rawData.map(p => String(p.magaza || "Belirsiz").trim()))].sort();
+        
+        selector.innerHTML = "";
+        let defaultStore = magazalar.includes("M4") ? "M4" : magazalar[0];
+        
+        magazalar.forEach(m => {
+            let opt = document.createElement('option');
+            opt.value = m;
+            opt.innerText = m + " Mağazası";
+            if(m === defaultStore) opt.selected = true;
+            selector.appendChild(opt);
+        });
+    }
+
+    function buildPositionSelector() {
+        const selector = document.getElementById('positionSelector');
+        let pozisyonlar = [...new Set(rawData.map(p => String(p.pozisyon || p.unvan || p.gorev || "Kasiyer").trim()))].sort();
+        
+        selector.innerHTML = "";
+        
+        // Hepsini gör seçeneği
+        let optAll = document.createElement('option');
+        optAll.value = "HEPSİ";
+        optAll.innerText = "Tüm Pozisyonlar";
+        selector.appendChild(optAll);
+
+        pozisyonlar.forEach(p => {
+            let opt = document.createElement('option');
+            opt.value = p;
+            opt.innerText = p;
+            selector.appendChild(opt);
+        });
+    }
+
+    function hesaplaVeRaporla() {
+        if (rawData.length === 0) {
+            document.getElementById('aiExecutiveSummary').innerHTML = "<p>⚠️ Analiz edilecek geçerli veri bulunamadı.</p>";
+            return;
+        }
+
+        // Seçili Odak Mağaza ve Pozisyon filtreleri
+        const seciliMagaza = document.getElementById('storeSelector').value;
+        const seciliPozisyon = document.getElementById('positionSelector').value;
+        
+        // Başlıkları ve dinamik alanları güncelle
+        document.getElementById('aiPanelTitle').innerText = seciliMagaza + (seciliPozisyon !== "HEPSİ" ? ` (${seciliPozisyon})` : "");
+        document.querySelectorAll('.dynamic-store-name').forEach(el => el.innerText = seciliMagaza);
+
+        // 1. ADIM: Personel Bazlı Metrikleri Ayrıştırma
+        let filteredRawData = rawData;
+        if (seciliPozisyon !== "HEPSİ") {
+            filteredRawData = rawData.filter(p => String(p.pozisyon || p.unvan || p.gorev || "Kasiyer").trim() === seciliPozisyon);
+        }
+
+        if (filteredRawData.length === 0) {
+            document.getElementById('aiExecutiveSummary').innerHTML = `<p>⚠️ Seçilen pozisyona (${seciliPozisyon}) ait veri bulunamadı.</p>`;
+            document.getElementById('storeWorkloadBars').innerHTML = '';
+            document.getElementById('storeBasketBars').innerHTML = '';
+            document.getElementById('criticalBottomTenTable').innerHTML = '';
+            document.getElementById('topTenTable').innerHTML = '';
+            return;
+        }
+
+        let personeller = filteredRawData.map(p => {
+            const fis = parseFloat(p.fis) || 0;
+            const tl = parseFloat(p.tl) || 0;
+            const euro = parseFloat(p.euro) || 0;
+            const toplamCiro = tl + (euro * euroRate);
+            const sepet = fis > 0 ? toplamCiro / fis : 0;
+            const magaza = String(p.magaza || "Belirsiz").trim();
+            const unvan = p.pozisyon || p.unvan || p.gorev || "Kasiyer";
+            
+            return {
+                id: p.sicil,
+                isim: p.isim,
+                magaza: magaza,
+                unvan: unvan,
+                fis: fis,
+                ciro: toplamCiro,
+                sepet: sepet
+            };
+        });
+
+        // 2. ADIM: Mağaza Bazlı Kümeleme ve Matematiksel Ortalamalar
+        let magazaMatrisi = {};
+        personeller.forEach(p => {
+            if (!magazaMatrisi[p.magaza]) {
+                magazaMatrisi[p.magaza] = { toplamCiro: 0, toplamFis: 0, personelSayisi: 0, personeller: [] };
+            }
+            magazaMatrisi[p.magaza].toplamCiro += p.ciro;
+            magazaMatrisi[p.magaza].toplamFis += p.fis;
+            magazaMatrisi[p.magaza].personelSayisi += 1;
+            magazaMatrisi[p.magaza].personeller.push(p);
+        });
+
+        // Mağaza istatistiksel özetlerini hesaplama
+        Object.keys(magazaMatrisi).forEach(m => {
+            let item = magazaMatrisi[m];
+            item.ortFisBasinaCiro = item.toplamFis > 0 ? item.toplamCiro / item.toplamFis : 0;
+            item.personelBasinaFis = item.personelSayisi > 0 ? item.toplamFis / item.personelSayisi : 0;
+        });
+
+        // Seçilen Mağazaya Ait Matris Parametreleri
+        const hedefMatris = magazaMatrisi[seciliMagaza];
+        
+        if (!hedefMatris) {
+            document.getElementById('aiExecutiveSummary').innerHTML = `<p>⚠️ Kritik Uyarı: '${seciliMagaza}' mağazasında bu filtreye uygun veri kümesi bulunamadı.</p>`;
+            renderGrafikler(magazaMatrisi, seciliMagaza);
+            document.getElementById('criticalBottomTenTable').innerHTML = '';
+            document.getElementById('topTenTable').innerHTML = '';
+            return;
+        }
+
+        const hedefSepetOrtalamasi = hedefMatris.ortFisBasinaCiro;
+        const hedefPersonelBasinaFis = hedefMatris.personelBasinaFis;
+
+        // Standart Sapma ve Anomali Hesaplama
+        let varyansToplami = hedefMatris.personeller.reduce((sum, p) => sum + Math.pow(p.sepet - hedefSepetOrtalamasi, 2), 0);
+        let standartSapma = Math.sqrt(varyansToplami / hedefMatris.personeller.length) || 1;
+        let sapmaEsigi = 1.0 * standartSapma;
+
+        let olaganustuIyiSapanlar = hedefMatris.personeller.filter(p => p.sepet > (hedefSepetOrtalamasi + sapmaEsigi)).sort((a,b) => b.sepet - a.sepet);
+        let radikalKotuSapanlar = hedefMatris.personeller.filter(p => p.sepet < (hedefSepetOrtalamasi - sapmaEsigi)).sort((a,b) => a.sepet - b.sepet);
+
+        // Benchmark Değerlendirmesi
+        let siraliMagazalar = Object.keys(magazaMatrisi).map(m => ({
+            isim: m,
+            sepetOrt: magazaMatrisi[m].ortFisBasinaCiro
+        })).sort((a, b) => b.sepetOrt - a.sepetOrt);
+
+        let liderMagaza = siraliMagazalar[0];
+        let benchmarkYorumu = "";
+        if (liderMagaza.isim !== seciliMagaza) {
+            let sepetFarki = liderMagaza.sepetOrt - hedefSepetOrtalamasi;
+            let farkYuzdesi = ((sepetFarki / hedefSepetOrtalamasi) * 100).toFixed(2);
+            benchmarkYorumu = `<p>📈 <strong>${seciliMagaza} Mağazası Benchmark Durumu:</strong> Mağazamız, şu an en yüksek sepet gücüne sahip olan <strong>${liderMagaza.isim} Mağazası</strong>'nın (₺${liderMagaza.sepetOrt.toFixed(2).replace('.', ',')}) gerisindedir. Hedef zirve noktasına ulaşmak için sepet gücünü ortalama <strong>%${farkYuzdesi} oranında artırmak</strong> gerekmektedir.</p>`;
+        } else {
+            let ikinciMagaza = siraliMagazalar[1] || { isim: "Diğer", sepetOrt: 0 };
+            let sepetFarki = hedefSepetOrtalamasi - ikinciMagaza.sepetOrt;
+            let farkYuzdesi = ikinciMagaza.sepetOrt > 0 ? ((sepetFarki / ikinciMagaza.sepetOrt) * 100).toFixed(2) : 0;
+            benchmarkYorumu = `<p>👑 <strong>${seciliMagaza} Mağazası Benchmark Durumu:</strong> Mağazamız, matris genelinde ₺${hedefSepetOrtalamasi.toFixed(2).replace('.', ',')} sepet gücü ile **lider lokasyon** konumundadır. En yakın takipçisi olan ${ikinciMagaza.isim} Mağazası'na kıyasla <strong>%${farkYuzdesi} daha verimlidir.</strong></p>`;
+        }
+
+        // Yoğunluk Baskısı Analizi
+        let ustundeFisOlanlar = hedefMatris.personeller.filter(p => p.fis > hedefPersonelBasinaFis);
+        let ustundeSepetOrt = ustundeFisOlanlar.length > 0 ? (ustundeFisOlanlar.reduce((sum, p) => sum + p.sepet, 0) / ustundeFisOlanlar.length) : 0;
+        let yogunlukEtkiYorumu = "";
+        
+        if (ustundeSepetOrt > 0 && ustundeSepetOrt < hedefSepetOrtalamasi) {
+            const kayipYuzdesi = (((hedefSepetOrtalamasi - ustundeSepetOrt) / hedefSepetOrtalamasi) * 100).toFixed(2);
+            yogunlukEtkiYorumu = `⚠️ <strong>${seciliMagaza} Yoğunluk Baskısı ve Kayıp Analizi:</strong> İşlem hacmi (fiş sayısı) ortalamanın üzerinde olan yüksek hızlı personellerimizin sepet ortalaması, mağaza genel ortalamasının <strong>%${kayipYuzdesi} altında</strong> kalmaktadır. Bu durum, yoğun saatlerde kasa önü satış süreçlerinin aceleden ötürü ihmal edildiğini kanıtlamaktadır.`;
+        } else {
+            yogunlukEtkiYorumu = `✅ <strong>${seciliMagaza} Yoğunluk Yönetimi Başarısı:</strong> İşlem hacmi yüksek personellerimizin sepet gücünde kırılma saptanmamıştır. Ekibimiz yoğun saatlerde hem hızı hem de satış kalitesini korumaktadır.`;
+        }
+
+        // Personel Anomalileri Metni
+        let anomaliPersonelMetni = `<p>🔍 <strong>${seciliMagaza} İçi Standart Sapma ve Anomali Bulguları:</strong> `;
+        if (olaganustuIyiSapanlar.length > 0) {
+            anomaliPersonelMetni += `Mağaza standartlarının üzerine çıkarak pozitif yönde ayrışan lider personelimiz <strong>${olaganustuIyiSapanlar[0].isim}</strong> (Sepet: ₺${olaganustuIyiSapanlar[0].sepet.toFixed(2).replace('.', ',')}) olmuştur. `;
+        }
+        if (radikalKotuSapanlar.length > 0) {
+            let enZayifPersonel = radikalKotuSapanlar[0];
+            let zayiflikFarki = hedefSepetOrtalamasi - enZayifPersonel.sepet;
+            anomaliPersonelMetni += `Buna karşın, standart sapma sınırlarının altına inerek en kritik negatif sapmayı oluşturan personelimiz <strong>${enZayifPersonel.isim}</strong> olarak tespit edilmiştir. Bu personel, mağaza ortalamasından fiş başına <strong>₺${zayiflikFarki.toFixed(2).replace('.', ',')} daha geride</strong> kalmaktadır.`;
+        } else {
+            anomaliPersonelMetni += "Mağaza kendi içinde dengeli bir dağılıma sahiptir, kronik bir negatif anomali grubu saptanmamıştır.";
+        }
+        anomaliPersonelMetni += "</p>";
+
+        // 3. ADIM: Her Personelin "Seçilen Mağaza Standartlarına Göre" Cirosal Etkisini Hesaplama
+        personeller.forEach(p => {
+            p.cirosalEtki = (p.sepet - hedefSepetOrtalamasi) * p.fis;
+        });
+
+        // Tablo Sıralamaları
+        let enIyiOn = [...personeller].sort((a, b) => b.ciro - a.ciro).slice(0, 10);
+        let enKritikOn = [...personeller].sort((a, b) => a.cirosalEtki - b.cirosalEtki).slice(0, 10);
+
+        // Lokomotif Güç Yorumu
+        let liderYorumu = "";
+        let hedefEnIyilari = hedefMatris.personeller.sort((a,b) => b.ciro - a.ciro);
+        if (hedefEnIyilari.length >= 2) {
+            let mp1 = hedefEnIyilari[0];
+            let mp2 = hedefEnIyilari[1];
+            let p1Katki = ((mp1.ciro / hedefMatris.toplamCiro) * 100).toFixed(2);
+            let p2Katki = ((mp2.ciro / hedefMatris.toplamCiro) * 100).toFixed(2);
+            liderYorumu = `<p>👑 <strong>${seciliMagaza} İçi Lokomotif Personel Gücü:</strong> Mağazamızın cirosal yükünü omuzlayan 1. sıradaki personelimiz <strong>${mp1.isim}</strong>, tek başına toplam cironun <strong>%${p1Katki}</strong> kadarlık kısmını üretmektedir. 2. sıradaki <strong>${mp2.isim}</strong> ise mağaza cirosuna <strong>%${p2Katki}</strong> oranında katkı sağlamaktadır.</p>`;
+        }
+
+        // Grafikleri ve Tabloları Arayüze Basma
+        renderGrafikler(magazaMatrisi, seciliMagaza);
+        renderTablolar(enIyiOn, enKritikOn, hedefSepetOrtalamasi, hedefPersonelBasinaFis, seciliMagaza);
+
+        // 5. ADIM: Otomatik Yönetici Özeti (AI Narrative) Üretimi
+        let mağazaListesi = Object.keys(magazaMatrisi);
+        let enCokYorulanMagaza = mağazaListesi.reduce((a, b) => magazaMatrisi[a].personelBasinaFis > magazaMatrisi[b].personelBasinaFis ? a : b, mağazaListesi[0]);
+        
+        let mevcutFisHacmi = Math.round(hedefPersonelBasinaFis);
+        let isYukuKiyasMetni = `Mağazamızda personel başına düşen ortalama iş yükü <strong>${mevcutFisHacmi} fiş</strong> düzeyindedir. En yüksek iş yüküne sahip olan ${enCokYorulanMagaza} (${Math.round(magazaMatrisi[enCokYorulanMagaza].personelBasinaFis)} fiş) ile kıyaslandığında ekibin sepet büyüme aktivitelerine odaklanabilmesi için operasyonel zamanı bulunmaktadır.`;
+
+        // Maliyet Kaybı Hesaplama
+        let odakGelisimOdakliToplamKayip = Math.abs(personeller.filter(x => x.cirosalEtki < 0 && x.magaza === seciliMagaza).reduce((a,b) => a + b.cirosalEtki, 0));
+
+        let aiSummaryHTML = `
+            <p>📊 <strong>${seciliMagaza} Odaklı İş Yükü Dengesi:</strong> ${isYukuKiyasMetni}</p>
+            ${benchmarkYorumu}
+            ${liderYorumu}
+            ${anomaliPersonelMetni}
+            <p>${yogunlukEtkiYorumu}</p>
+            <p>💸 <strong>${seciliMagaza} Gelişim ve Risk Boyutu:</strong> Mağazamızın kendi içerisinde, belirlenen hedef sepet ortalamasının altında kalarak potansiyel kaybına yol açan personellerin mağazaya doğrudan fırsat maliyeti tam <strong>₺${Math.round(odakGelisimOdakliToplamKayip).toLocaleString('tr-TR')}</strong> değerindedir. Aşağıda önerilen aksiyonların alınması performans iyileşmesini tetikleyecektir.</p>
+        `;
+        document.getElementById('aiExecutiveSummary').innerHTML = aiSummaryHTML;
+    }
+
+    function renderGrafikler(matrix, seciliMagaza) {
+        const storeBarsContainer = document.getElementById('storeWorkloadBars');
+        const basketBarsContainer = document.getElementById('storeBasketBars');
+        storeBarsContainer.innerHTML = '';
+        basketBarsContainer.innerHTML = '';
+
+        const mağazaDeğerleri = Object.values(matrix);
+        if(mağazaDeğerleri.length === 0) return;
+        
+        const maxFis = Math.max(...mağazaDeğerleri.map(x => x.personelBasinaFis), 1);
+        const maxBasket = Math.max(...mağazaDeğerleri.map(x => x.ortFisBasinaCiro), 1);
+
+        Object.keys(matrix).forEach(m => {
+            let data = matrix[m];
+            let fisPct = (data.personelBasinaFis / maxFis) * 100;
+            let basketPct = (data.ortFisBasinaCiro / maxBasket) * 100;
+            
+            let isTarget = m === seciliMagaza;
+            let barColor = isTarget ? "var(--purple)" : "var(--accent)";
+            let borderStyle = isTarget ? "border: 2px solid #fff; box-shadow: 0 0 10px rgba(168,85,247,0.5);" : "";
+            let labelSuffix = isTarget ? " 🌟 [ODAK MERKEZ]" : "";
+            let cleanId = m.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '');
+
+            // İş Yükü Grafiği
+            storeBarsContainer.innerHTML += `
+                <div class="comp-row" style="${borderStyle ? 'padding:4px; border-radius:8px;' : ''}">
+                    <div class="comp-info">
+                        <span style="${isTarget ? 'color:var(--purple); font-weight:800;' : ''}">${m} Mağazası (${data.personelSayisi} Per.)${labelSuffix}</span>
+                        <span>${Math.round(data.personelBasinaFis)} Fiş / Kişi</span>
+                    </div>
+                    <div class="comp-bar-bg">
+                        <div class="comp-bar-fill" id="workload-bar-${cleanId}" style="background: ${barColor}"></div>
+                    </div>
+                </div>
+            `;
+
+            // Sepet Gücü Grafiği
+            basketBarsContainer.innerHTML += `
+                <div class="comp-row" style="${borderStyle ? 'padding:4px; border-radius:8px;' : ''}">
+                    <div class="comp-info">
+                        <span style="${isTarget ? 'color:var(--purple); font-weight:800;' : ''}">${m} Mağazası${labelSuffix}</span>
+                        <span>₺${data.ortFisBasinaCiro.toFixed(2).replace('.', ',')} <span style="font-size:11px; color:var(--text-muted);">[€${(data.ortFisBasinaCiro / euroRate).toFixed(2).replace('.', ',')}]</span></span>
+                    </div>
+                    <div class="comp-bar-bg">
+                        <div class="comp-bar-fill" id="basket-bar-${cleanId}" style="background: ${isTarget ? 'var(--purple)' : 'var(--success)'}"></div>
+                    </div>
+                </div>
+            `;
+
+            setTimeout(() => {
+                const wBar = document.getElementById(`workload-bar-${cleanId}`);
+                const bBar = document.getElementById(`basket-bar-${cleanId}`);
+                if (wBar) wBar.style.width = fisPct + '%';
+                if (bBar) bBar.style.width = basketPct + '%';
+            }, 100);
+        });
+    }
+
+    function renderTablolar(enIyiOn, enKritikOn, hedefSepetOrtalamasi, hedefPersonelBasinaFis, seciliMagaza) {
+        const critBody = document.getElementById('criticalBottomTenTable');
+        const topBody = document.getElementById('topTenTable');
+        critBody.innerHTML = '';
+        topBody.innerHTML = '';
+
+        // Kritik Son 10 Tablosu
+        enKritikOn.forEach(p => {
+            let aksiyonPlani = "";
+            let isTargetStore = p.magaza === seciliMagaza;
+            
+            if (p.fis < hedefPersonelBasinaFis && p.sepet < hedefSepetOrtalamasi) {
+                aksiyonPlani = isTargetStore 
+                    ? `🚨 <strong>${seciliMagaza} Çifte Risk:</strong> Hem hız standartlarının hem sepet ortalamasının altında. Acil birebir görüşme ve gelişim takibi şart.`
+                    : `🔄 <strong>Performans Transfer Riski:</strong> Mağaza hız ve sepet baremlerinin altında. Operasyonel uyum süreci başlatılmalı.`;
+            } else if (p.sepet < hedefSepetOrtalamasi) {
+                aksiyonPlani = isTargetStore
+                    ? `🛍️ <strong>Kasa Önü Satış Eksikliği:</strong> İşlem hızı iyi fakat ek ürün satışı zayıf. Cross-sell ve up-sell (parfüm, çikolata vb.) teşvikleri artırılmalı.`
+                    : `📉 <strong>Sepet Gücü Baskısı:</strong> Hacim yüksek ancak düşük sepet ortalaması matrisi aşağı çekiyor. Çapraz satış takibi yapılmalı.`;
+            } else {
+                aksiyonPlani = isTargetStore
+                    ? `⏱️ <strong>Hizmet Hızı Yetersizliği:</strong> Sepet kalitesi başarılı ancak işlem hacmi çok düşük. Yoğun saatlerde kasada kalma süresi artırılmalı.`
+                    : `⏱️ <strong>Hız Frekansı Eksikliği:</strong> Nitelik amaca uygun fakat işlem frekansı zayıf. Destek saatleri optimizasyonu gerekli.`;
+            }
+
+            let rowStyle = isTargetStore ? "background: rgba(168, 85, 247, 0.05);" : "";
+            let nameDisplay = isTargetStore ? `🎯 <span style="color:var(--purple); font-weight:bold;">${p.isim}</span>` : p.isim;
+
+            critBody.innerHTML += `
+                <tr style="${rowStyle}">
+                    <td><strong>${nameDisplay}</strong><span class="sub-text">Sicil: ${p.id} | ${p.unvan}</span></td>
+                    <td><strong>${p.magaza} Mağazası</strong></td>
+                    <td>${Math.round(p.fis)} <span class="sub-text">Hedef Ort: ${Math.round(hedefPersonelBasinaFis)}</span></td>
+                    <td>₺${p.sepet.toFixed(2).replace('.', ',')}<span class="sub-text">Hedef Ort: ₺${hedefSepetOrtalamasi.toFixed(2).replace('.', ',')}</span></td>
+                    <td><span class="badge badge-danger">-₺${Math.round(Math.abs(p.cirosalEtki)).toLocaleString('tr-TR')}</span><span class="sub-text" style="color:var(--danger); font-size:10px;">-€${Math.round(Math.abs(p.cirosalEtki) / euroRate)}</span></td>
+                    <td><div class="action-box">${aksiyonPlani}</div></td>
+                </tr>
+            `;
+        });
+
+        // En İyi İlk 10 Tablosu
+        enIyiOn.forEach((p, index) => {
+            let etkiRozeti = "";
+            let isTargetStore = p.magaza === seciliMagaza;
+            
+            if (isTargetStore) {
+                etkiRozeti = `<span class="badge badge-purple" style="margin-left: 5px;">${seciliMagaza} Gücü</span>`;
+            }
+
+            let rowStyle = isTargetStore ? "background: rgba(168, 85, 247, 0.03);" : "";
+            let nameDisplay = isTargetStore ? `🚀 <span style="color:var(--purple); font-weight:bold;">${p.isim}</span>` : `🚀 ${p.isim}`;
+
+            topBody.innerHTML += `
+                <tr style="${rowStyle}">
+                    <td><strong><span>${index + 1}.</span> ${nameDisplay}</strong>${etkiRozeti}<span class="sub-text">Sicil: ${p.id} | ${p.unvan}</span></td>
+                    <td><strong>${p.magaza} Mağazası</strong></td>
+                    <td><strong>${Math.round(p.fis)} Fiş</strong></td>
+                    <td><strong>₺${p.sepet.toFixed(2).replace('.', ',')}</strong><span class="sub-text">€${(p.sepet / euroRate).toFixed(2).replace('.', ',')} / Fiş</span></td>
+                    <td><span class="badge badge-success">₺${Math.round(p.ciro).toLocaleString('tr-TR')}</span><span class="sub-text" style="color:var(--success); font-size:10px; font-weight:bold;">€${Math.round(p.ciro / euroRate).toLocaleString('tr-TR')}</span></td>
+                    <td><span class="badge badge-success">💎 ${isTargetStore ? 'Mağaza Verimlilik Lideri' : 'Yüksek Verimlilik Katkısı'}</span></td>
+                </tr>
+            `;
+        });
+    }
+
+    window.onload = verileriAnalizEt;
+</script>
+</body>
+</html>
