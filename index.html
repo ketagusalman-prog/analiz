@@ -12,6 +12,7 @@
             --accent: #10b981;
             --gold: #f59e0b;
             --blue: #38bdf8;
+            --purple: #a855f7; /* Rapor 2 için yeni renk teması */
             --text: #f8fafc;
             --border: rgba(255, 255, 255, 0.08);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -57,7 +58,7 @@
 
         .button-grid {
             display: grid;
-            /* Büyük ekranlarda yan yana 5 tane sığması, mobilde alt alta geçmesi için optimize edildi */
+            /* Büyük ekranlarda yan yana sığması, mobilde alt alta geçmesi için optimize edildi */
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 15px;
             width: 100%;
@@ -94,6 +95,10 @@
 
         .nav-card.rapor-card:hover {
             border-color: var(--blue);
+        }
+
+        .nav-card.rapor2-card:hover {
+            border-color: var(--purple);
         }
 
         .nav-card i {
@@ -133,6 +138,10 @@
 
         .nav-card.rapor-card::after {
             background: radial-gradient(circle, rgba(56, 189, 248, 0.07) 0%, transparent 70%);
+        }
+
+        .nav-card.rapor2-card::after {
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.07) 0%, transparent 70%);
         }
 
         .nav-card:hover::after {
@@ -199,6 +208,13 @@
             <i>🗂️</i>
             <h3 style="color: var(--blue);">Genel Raporlar</h3>
             <p>Sistem logları, periyodik çıktılar ve arşivlenmiş geçmiş raporlar.</p>
+        </a>
+
+        <!-- Rapor 2 Sayfası -->
+        <a href="rapor2.html" class="nav-card rapor2-card">
+            <i>📈</i>
+            <h3 style="color: var(--purple);">Detaylı Raporlar</h3>
+            <p>Gelişmiş veri filtreleme, özel dönemsel analizler ve ek göstergeler.</p>
         </a>
 
         <!-- Personel Sayfası -->
