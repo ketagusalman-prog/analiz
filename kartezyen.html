@@ -6,13 +6,15 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; padding: 30px; background: #f1f5f9; color: #1e293b; }
         
-        /* PDF/Yazdırma Ayarları: Görünümü birebir korur */
+        /* PDF/Yazdırma Ayarları */
         @media print {
             body { background: white !important; padding: 10px !important; }
-            .no-print { display: none !important; }
-            table { box-shadow: none !important; border: 1px solid #e2e8f0 !important; width: 100% !important; }
+            .no-print, .btn-print { display: none !important; }
             
-            /* Renklerin PDF'de birebir çıkmasını zorunlu kılar */
+            /* Başlığın PDF'de görünmesi için */
+            h2 { display: block !important; border-bottom: 2px solid #3b82f6 !important; margin-bottom: 20px !important; }
+            
+            table { box-shadow: none !important; border: 1px solid #e2e8f0 !important; width: 100% !important; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             
             th { background: #0f172a !important; color: #f8fafc !important; }
@@ -35,15 +37,15 @@
         
         .yorum-alani { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 15px; cursor: text; min-width: 250px; text-align: left !important; font-size: 13px; }
         
-        .btn-print { padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; transition: 0.3s; }
+        .btn-print { padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; transition: 0.3s; margin-bottom: 20px; }
         .btn-print:hover { background: #2563eb; }
     </style>
 </head>
 <body>
 
+    <h2>📊 Kartezyen Paneli</h2>
+    
     <div class="no-print">
-        <h2>📊 Kartezyen Paneli</h2>
-        <br>
         <button class="btn-print" onclick="window.print()">📄 PDF Raporu Olarak Kaydet</button>
     </div>
 
