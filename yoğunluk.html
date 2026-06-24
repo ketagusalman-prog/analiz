@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html lang="tr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>M4 | Stratejik Operasyonel Analiz</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+
+        :root { --accent: #0f172a; }
+
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; padding: 40px; color: #1e293b; }
+
+        .container { max-width: 1000px; margin: auto; }
+
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+
+        /* PDF Buton Stili */
+
+        .pdf-btn { background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: transform 0.2s, background 0.2s; }
+
+        .pdf-btn:hover { background: #334155; transform: translateY(-2px); }
+
+        
+
+        .analiz-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
+
+        .analiz-card { background: white; padding: 15px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+        .analiz-card h3 { font-size: 10px; color: #64748b; margin-top: 0; text-transform: uppercase; }
+
+        .analiz-card p { font-size: 11px; font-weight: 700; color: #0f172a; margin: 8px 0 0 0; line-height: 1.4; }
+
+        
+
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+
+        th { background: #0f172a; color: white; padding: 16px; text-align: left; font-size: 12px; font-weight: 700; }
+
+        td { padding: 14px; border-bottom: 1px solid #f1f5f9; font-weight: 600; font-size: 13px; }
+
+        .m-cell { color: #0f172a; font-weight: 800; }
+
+        .v-cell { color: #3b82f6; }
+
+    </style>
+
+</head>
+
+<body>
+
+
+
+<div class="container" id="pdf-content">
+
+    <div class="header">
+
+        <div>
+
+            <h1>Mağaza - Grup - Vardiya Analizi</h1>
+
+            <p id="stats-info" style="color:#64748b;">Veriler işleniyor...</p>
+
+        </div>
+
+                    <button onclick="window.print()" style="background:var(--accent); color:white; border:none; padding:12px 20px; border-radius:12px; font-weight:700; cursor:pointer;"></button>
+
+
+
+    </div>
+
+
+
+    <div class="analiz-container">
+
+        <div class="analiz-card"><h3>Grup Dağılımı</h3><p id="analiz-1">Hesaplanıyor...</p></div>
+
+        <div class="analiz-card"><h3>Operasyonel Durum</h3><p id="analiz-2">Hesaplanıyor...</p></div>
+
+        <div class="analiz-card"><h3>Stratejik Uyarı</h3><p id="analiz-3">Hesaplanıyor...</p></div>
+
+        <div class="analiz-card"><h3>Renk Kodları</h3><p><span style="color:#ef4444;">● KIRMIZI:</span> Yoğun<br><span style="color:#10b981;">● YEŞİL:</span> İdeal<br><span style="color:#3b82f6;">● MAVİ:</span> Atıl</p></div>
+
+    </div>
+
+
+
+    <div id="tabloAlani">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Mağaza</th><th>Grup</th><th>Vardiya</th><th>Toplam Fiş</th>
+
+                    <th>Tahmini Toplam TL</th><th>Çalışan</th><th>Yoğunluk Katsayısı</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="tbody"></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+
+<script>
+
+    function indirPDF() {
+
+        const element = document.getElementById('pdf-content');
+
+        const opt = {
+
+            margin:       [10, 10, 10, 10],
+
+            filename:     'Operasyonel_Analiz_Raporu.pdf',
+
+            image:        { type: 'jpeg', quality: 1 },
+
+            html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+
+        };
+
+        html2pdf().set(opt).from(element).save();
+
+    }
+
+
+
+    // Analiz scriptleriniz...
+
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwVZ7VcV3Nob8Z2eEVrTSECZAlVbPH0eOikAJ585JEPdebcXMhvXw8DwF_T8UoM-TufsQ/exec";
+
+    const HEDEF_FIS_BASI = 20; 
+
+    const STRATEJIK_GRUP = ["M1", "M4", "M6", "M8"];
+
+
+
+    window.onload = () => {
+
+        fetch(SCRIPT_URL)
+
+            .then(res => res.json())
+
+            .then(res => analizEt(res.data, res.kur));
+
+    };
+
+
+
+    function analizEt(data, kur) {
+
+        let gruplar = {};
+
+        data.forEach(p => {
+
+            let anahtar = p.magaza + "|" + p.grup + "|" + p.vardiya;
+
+            if(!gruplar[anahtar]) gruplar[anahtar] = { m: p.magaza, g: p.grup, v: p.vardiya, fis: 0, toplamTL: 0, calisan: 0 };
+
+            gruplar[anahtar].fis += parseFloat(p.fis) || 0;
+
+            gruplar[anahtar].toplamTL += (parseFloat(p.tl) || 0) + ((parseFloat(p.euro) || 0) * kur);
+
+            gruplar[anahtar].calisan += 1;
+
+        });
+
+
+
+        let liste = Object.values(gruplar).map(item => {
+
+            item.katsayi = (item.fis / item.calisan) / HEDEF_FIS_BASI;
+
+            return item;
+
+        });
+
+
+
+        let strGrp = liste.filter(x => STRATEJIK_GRUP.includes(x.m));
+
+        let diger = liste.filter(x => !STRATEJIK_GRUP.includes(x.m));
+
+        
+
+        let sgOrt = strGrp.length > 0 ? (strGrp.reduce((a,b) => a + b.katsayi, 0) / strGrp.length) : 0;
+
+        let dgOrt = diger.length > 0 ? (diger.reduce((a,b) => a + b.katsayi, 0) / diger.length) : 0;
+
+
+
+        const tbody = document.getElementById('tbody');
+
+        tbody.innerHTML = '';
+
+        
+
+        liste.sort((a, b) => b.katsayi - a.katsayi).forEach(x => {
+
+            let grupOrt = STRATEJIK_GRUP.includes(x.m) ? sgOrt : dgOrt;
+
+            let renk = x.katsayi > (grupOrt * 1.2) ? "#ef4444" : (x.katsayi < (grupOrt * 0.8) ? "#3b82f6" : "#10b981");
+
+
+
+            tbody.innerHTML += `<tr>
+
+                <td class="m-cell">${x.m}</td>
+
+                <td>${x.g}</td>
+
+                <td class="v-cell">${x.v}</td>
+
+                <td>${Math.round(x.fis).toLocaleString('tr-TR')}</td>
+
+                <td>${Math.round(x.toplamTL).toLocaleString('tr-TR')} TL</td>
+
+                <td>${x.calisan}</td>
+
+                <td style="color:${renk}; font-weight:900;">${x.katsayi.toFixed(2)}</td>
+
+            </tr>`;
+
+        });
+
+
+
+        document.getElementById('analiz-1').innerHTML = `<b>Stratejik:</b> ${sgOrt.toFixed(2)}<br><b>Diğerleri:</b> ${dgOrt.toFixed(2)}`;
+
+        document.getElementById('analiz-2').innerText = "Kırmızı: Kendi grubu ortalaması +%20 yük. Mavi: -%20 atıl kapasite.";
+
+        document.getElementById('analiz-3').innerText = "Matematiksel değerlendirme: Grup normalleri kıyaslanmıştır.";
+
+        document.getElementById('stats-info').innerText = "Son güncelleme: " + new Date().toLocaleTimeString();
+
+    }
+
+</script>
+
+</body>
+
+
+</html>
